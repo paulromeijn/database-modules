@@ -1,0 +1,8 @@
+clear_log
+
+default_database_name "test_structure"
+
+create_database :overwrite_existing
+
+import_database_structure
+update_comments

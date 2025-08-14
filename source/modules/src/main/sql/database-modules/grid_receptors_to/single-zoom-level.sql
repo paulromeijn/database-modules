@@ -31,7 +31,7 @@ CREATE INDEX idx_receptors_to_assessment_areas_assessment_area_id ON receptors_t
 CREATE TABLE receptors_to_critical_deposition_areas
 (
 	assessment_area_id integer NOT NULL,
-	type nature.critical_deposition_area_type NOT NULL,
+	type public.critical_deposition_area_type NOT NULL,
 	critical_deposition_area_id integer NOT NULL,
 	receptor_id integer NOT NULL,
 	surface posreal NOT NULL,
@@ -54,14 +54,16 @@ CREATE INDEX idx_receptors_to_critical_deposition_areas ON receptors_to_critical
 CREATE MATERIALIZED VIEW receptors_to_relevant_habitats AS
 SELECT 
 	assessment_area_id, 
-	critical_deposition_area_id, 
+	critical_deposition_area_id AS habitat_type_id, 
 	receptor_id,
+	surface,
+	receptor_habitat_coverage,
 	surface * receptor_habitat_coverage AS cartographic_surface
 	
-	FROM grid.receptors_to_critical_deposition_areas
+	FROM receptors_to_critical_deposition_areas
 	
 	WHERE type = 'relevant_habitat'
 ;
 
-CREATE UNIQUE INDEX idx_receptors_to_relevant_habitats_ids ON receptors_to_relevant_habitats (assessment_area_id, critical_deposition_area_id, receptor_id);
+CREATE UNIQUE INDEX idx_receptors_to_relevant_habitats_ids ON receptors_to_relevant_habitats (assessment_area_id, habitat_type_id, receptor_id);
 CREATE INDEX idx_receptors_to_relevant_habitats ON receptors_to_relevant_habitats (receptor_id);

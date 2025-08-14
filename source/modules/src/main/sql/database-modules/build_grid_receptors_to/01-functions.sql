@@ -7,24 +7,24 @@
  * @param v_geometry The geometry to determine intersects for.
  * @param v_gridsize The size of the used grids in kilometers.
  */
-CREATE OR REPLACE FUNCTION grid.ae_determine_hexagon_intersections(v_geometry geometry(MultiPolygon), v_gridsize integer = 1)
+CREATE OR REPLACE FUNCTION ae_determine_hexagon_intersections(v_geometry geometry(MultiPolygon), v_gridsize integer = 1)
 	RETURNS TABLE(receptor_id integer, surface double precision, geometry geometry, zoom_level smallint) AS
 $BODY$
 	WITH
 	split_geometry AS (
-		SELECT (ST_Dump(v_geometry)).geom AS geometry
+		SELECT (ST_Dump(v_geometry)).geom AS split_geometry
 	),
 	regular_grid AS (
-		SELECT grid.ae_create_regular_grid(ST_Envelope(v_geometry), v_gridsize * 1000)::geometry(Polygon) AS geometry
+		SELECT ae_create_regular_grid(ST_Envelope(v_geometry), v_gridsize * 1000)::geometry(Polygon) AS regular_geometry
 	),
 	intersected AS (
 		SELECT
 			CASE
-				WHEN ST_Within(regular_grid.geometry, split_geometry.geometry)
-				THEN regular_grid.geometry
-				ELSE ST_Intersection(regular_grid.geometry, split_geometry.geometry) END AS geometry
+				WHEN ST_Within(regular_geometry, split_geometry)
+				THEN regular_geometry
+				ELSE ST_Intersection(regular_geometry, split_geometry) END AS geometry
 			FROM regular_grid
-				INNER JOIN split_geometry ON ST_Intersects(regular_grid.geometry, split_geometry.geometry) AND regular_grid.geometry && split_geometry.geometry
+				INNER JOIN split_geometry ON ST_Intersects(regular_geometry, split_geometry) AND regular_geometry && split_geometry
 	),
 	vector_tiles AS (
 		SELECT (ST_Dump(intersected.geometry)).geom AS geometry	FROM intersected WHERE intersected.geometry IS NOT NULL
@@ -36,7 +36,7 @@ $BODY$
 			zoom_level
 
 			FROM vector_tiles
-				INNER JOIN grid.hexagons ON ST_Intersects(vector_tiles.geometry, hexagons.geometry)
+				INNER JOIN hexagons ON ST_Intersects(vector_tiles.geometry, hexagons.geometry)
 
 			WHERE zoom_level = ANY(string_to_array(system.constant('RESULT_ZOOM_LEVELS'), ',')::int[])
 	),
@@ -77,10 +77,10 @@ LANGUAGE sql VOLATILE;
  *
  * @returns Average coveragefraction for a habitat on a receptor, weighted by surface of the intersections between habitat areas and hexagon.
  */
-CREATE OR REPLACE FUNCTION grid.ae_determine_habitat_coverage_on_hexagon(v_assessment_area_id integer, v_type nature.critical_deposition_area_type, v_habitat_type_id integer, v_receptor_id integer, v_zoom_level integer)
+CREATE OR REPLACE FUNCTION ae_determine_habitat_coverage_on_hexagon(v_assessment_area_id integer, v_type public.critical_deposition_area_type, v_habitat_type_id integer, v_receptor_id integer, v_zoom_level integer)
 	RETURNS fraction AS
 $BODY$
-	WITH hexagon AS (SELECT geometry FROM grid.hexagons WHERE receptor_id = v_receptor_id AND zoom_level = v_zoom_level)
+	WITH hexagon AS (SELECT geometry FROM hexagons WHERE receptor_id = v_receptor_id AND zoom_level = v_zoom_level)
 	SELECT
 		system.weighted_avg(coverage::numeric, ST_Area(ST_Intersection(habitat_areas.geometry, hexagon.geometry))::numeric)::fraction
 

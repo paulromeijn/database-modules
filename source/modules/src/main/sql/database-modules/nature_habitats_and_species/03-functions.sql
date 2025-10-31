@@ -7,7 +7,7 @@
  * - Sensitive: 1400 <= KDW < 2400
  * - Lowly/not sensitive: >= 2400
  */
-CREATE OR REPLACE FUNCTION ae_critical_deposition_classification(critical_deposition posreal)
+CREATE OR REPLACE FUNCTION ae_critical_deposition_classification(critical_deposition posnum)
 	RETURNS text AS
 $BODY$
 	SELECT (SELECT CASE 

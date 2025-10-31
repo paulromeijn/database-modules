@@ -9,7 +9,7 @@ CREATE TABLE receptors_to_assessment_areas
 	receptor_id integer NOT NULL,
 	assessment_area_id integer NOT NULL,
 	zoom_level smallint NOT NULL,
-	surface posreal NOT NULL,
+	surface posnum NOT NULL,
 
 	CONSTRAINT receptors_to_assessment_areas_pkey PRIMARY KEY (receptor_id, assessment_area_id, zoom_level),
 	CONSTRAINT receptors_to_assessment_areas_fkey_receptors FOREIGN KEY (receptor_id) REFERENCES receptors
@@ -36,8 +36,8 @@ CREATE TABLE receptors_to_critical_deposition_areas
 	critical_deposition_area_id integer NOT NULL,
 	receptor_id integer NOT NULL,
 	zoom_level smallint NOT NULL,
-	surface posreal NOT NULL,
-	receptor_habitat_coverage posreal NOT NULL,
+	surface posnum NOT NULL,
+	receptor_habitat_coverage posnum NOT NULL,
 
 	CONSTRAINT receptors_to_critical_deposition_areas_pkey PRIMARY KEY (assessment_area_id, type, critical_deposition_area_id, receptor_id, zoom_level),
 	CONSTRAINT receptors_to_critical_deposition_areas_fkey_receptors FOREIGN KEY (receptor_id) REFERENCES receptors

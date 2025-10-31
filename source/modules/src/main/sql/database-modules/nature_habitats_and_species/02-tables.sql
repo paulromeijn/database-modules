@@ -25,7 +25,7 @@ CREATE TABLE habitat_type_critical_levels (
 	habitat_type_id integer NOT NULL,
 	substance_id smallint NOT NULL,
 	result_type emission_result_type NOT NULL,
-	critical_level posreal NULL,
+	critical_level posnum NULL,
 	sensitive boolean NOT NULL DEFAULT FALSE,
 
 	CONSTRAINT habitat_type_critical_levels_pkey PRIMARY KEY (habitat_type_id, substance_id, result_type),
